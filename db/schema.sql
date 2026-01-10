@@ -1,0 +1,11 @@
+CREATE DATABASE IF NOT EXISTS attendance_db;
+USE attendance_db;
+
+CREATE TABLE IF NOT EXISTS users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  username VARCHAR(50) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  name VARCHAR(50) NOT NULL,
+  role ENUM('employee','admin') NOT NULL DEFAULT 'employee',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

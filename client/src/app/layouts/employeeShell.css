@@ -1,0 +1,137 @@
+:root{
+  --bg:#f4f6fb;
+  --card:#ffffff;
+  --text:#1f2430;
+  --muted:#7b8498;
+  --blue:#2f66ff;
+  --line:#e7ecf5;
+  --shadow:0 8px 24px rgba(18, 38, 63, .08);
+}
+
+.eshell{
+  min-height:100vh;
+  background:var(--bg);
+  display:flex;
+  gap:24px;
+  padding:22px 24px;
+  color:var(--text);
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", Arial, sans-serif;
+}
+
+/* Left sidebar */
+.eside{
+  width:78px;
+  background:var(--card);
+  border-radius:18px;
+  box-shadow:var(--shadow);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:14px 10px;
+}
+
+.eside-top{
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+  margin-top:8px;
+}
+
+.enav{
+  width:44px;
+  height:44px;
+  border-radius:12px;
+  display:grid;
+  place-items:center;
+  border:1px solid transparent;
+  color:#6b7280;
+  text-decoration:none;
+  background:transparent;
+}
+
+.enav:hover{
+  background:#f6f8ff;
+  border-color:#eef2ff;
+}
+
+.enav-active{
+  background:#edf2ff;
+  color:var(--blue);
+  border-color:#dbe6ff;
+}
+
+.enav-icon{
+  font-size:18px;
+}
+
+.eside-bottom{
+  margin-top:auto;
+  padding-bottom:8px;
+}
+
+.eside-logout{
+  width:44px;
+  height:44px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:#fff;
+  cursor:pointer;
+}
+
+/* Main area */
+.emain{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+
+/* Topbar */
+.etop{
+  background:var(--card);
+  border-radius:18px;
+  box-shadow:var(--shadow);
+  height:76px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 20px;
+}
+
+.ebrand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-weight:800;
+  letter-spacing:.2px;
+}
+
+.ebrand-text{ font-size:22px; }
+.ebrand-mark{ color:var(--blue); font-weight:900; transform: translateY(-1px); }
+
+.eprofile{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding-left:18px;
+  border-left:1px solid var(--line);
+}
+
+.eavatar{
+  width:40px;
+  height:40px;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  border:1px solid var(--line);
+  background:#fff;
+}
+
+.eprofile-meta{ display:flex; flex-direction:column; }
+.eprofile-name{ font-size:13px; font-weight:800; }
+.eprofile-sub{ font-size:12px; color:var(--muted); }
+
+.econtent{
+  /* 페이지 내용이 카드/그리드로 잘 보이게 여백 */
+  padding:6px 2px 0;
+}
