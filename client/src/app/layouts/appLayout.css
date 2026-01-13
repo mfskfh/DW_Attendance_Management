@@ -1,0 +1,100 @@
+.appShell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f6f7fb;
+}
+
+.appHeader {
+  height: 64px;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ffffff;
+  border-bottom: 1px solid #e9e9ef;
+}
+
+.appHeader.admin {
+  border-bottom: 3px solid #ff8a2b;
+}
+
+.appHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.appBadge {
+  padding: 6px 10px;
+  font-weight: 800;
+  border-radius: 10px;
+  background: #111;
+  color: #fff;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+
+.appTitleTop {
+  font-weight: 900;
+  font-size: 15px;
+}
+
+.appTitleSub {
+  font-size: 12px;
+  opacity: 0.7;
+  margin-top: 2px;
+}
+
+.appLogout {
+  border: 0;
+  background: #111;
+  color: #fff;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.appMain {
+  flex: 1;
+  padding: 14px;
+  padding-bottom: 82px; /* bottom nav 공간 */
+}
+
+.appBottomNav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 70px;
+  background: #ffffff;
+  border-top: 1px solid #e9e9ef;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  z-index: 20;
+}
+
+.appBottomNav.admin {
+  border-top: 3px solid #ff8a2b;
+}
+
+.navItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-decoration: none;
+  color: #222;
+  font-weight: 800;
+  font-size: 12px;
+}
+
+.navIcon {
+  font-size: 18px;
+}
+
+.navItem.active {
+  color: #ff8a2b;
+}

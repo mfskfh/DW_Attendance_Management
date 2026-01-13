@@ -1,0 +1,130 @@
+.mr-wrap {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.mr-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mr-title {
+  font-size: 20px;
+  font-weight: 1000;
+}
+
+.mr-filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.mr-chip {
+  border: 1px solid #ddd;
+  background: #fff;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.mr-chip.active {
+  background: #111;
+  color: #fff;
+  border-color: #111;
+}
+
+.mr-list {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.mr-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 14px;
+  border: 1px solid rgba(0,0,0,.06);
+  box-shadow: 0 6px 14px rgba(0,0,0,.06);
+}
+
+.mr-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mr-type {
+  font-weight: 1000;
+  font-size: 16px;
+}
+
+.mr-status {
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 12px;
+}
+
+.mr-status.대기 { background: rgba(250,204,21,.2); color: #854d0e; }
+.mr-status.승인 { background: rgba(74,222,128,.2); color: #15803d; }
+.mr-status.거절 { background: rgba(239,68,68,.2); color: #b91c1c; }
+
+.mr-body {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.mr-row {
+  background: #f7f7fb;
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.mr-k {
+  font-weight: 900;
+  font-size: 12px;
+  opacity: .75;
+}
+
+.mr-v {
+  font-weight: 1000;
+}
+
+.mr-empty {
+  padding: 18px;
+  text-align: center;
+  opacity: .7;
+  font-weight: 900;
+  background: #fff;
+  border: 1px dashed rgba(0,0,0,.18);
+  border-radius: 16px;
+}
+
+@media (max-width: 600px) {
+  .mr-body {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mr-right {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.mr-createBtn {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-weight: 1000;
+  cursor: pointer;
+}

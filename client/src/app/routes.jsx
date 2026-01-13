@@ -1,7 +1,5 @@
 import { Routes, Route } from "react-router-dom";
 
-import LandingPage from "../pages/landing/LandingPage";
-import EmployeeHomePage from "../pages/employee/EmployeeHomePage";
 import AttendanceHistoryPage from "../pages/employee/AttendanceHistoryPage";
 import RequestListPage from "../pages/employee/RequestListPage";
 import RequestCreatePage from "../pages/employee/RequestCreatePage";

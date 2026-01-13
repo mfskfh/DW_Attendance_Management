@@ -1,0 +1,110 @@
+/* 전체 래퍼 */
+.adashWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ✅ KPI 5개 박스: ㅁㅁㅁㅁㅁ */
+.kpiGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+}
+
+.kpiCard {
+  background: #fff;
+  border-radius: 16px;
+  padding: 14px 14px 12px;
+  box-shadow: 0 6px 16px rgba(0,0,0,.08);
+  border: 1px solid rgba(0,0,0,.05);
+}
+
+.kpiTop {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.kpiDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+}
+
+.kpiLabel {
+  font-weight: 900;
+  font-size: 13px;
+  color: #111;
+  letter-spacing: .2px;
+}
+
+.kpiValue {
+  margin-top: 10px;
+  font-size: 28px;
+  font-weight: 1000;
+  color: #111;
+}
+
+/* 헤더(기간 버튼) */
+.dashMain { }
+.dashHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dashTitle {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 1000;
+}
+
+.dashTabs button {
+  margin-left: 6px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  background: #f6f6f6;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.dashTabs button.active {
+  background: #111;
+  color: #fff;
+  border-color: #111;
+}
+
+/* 그래프 2개 */
+.adash {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.adash-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 16px;
+  min-height: 420px;
+  box-shadow: 0 6px 16px rgba(0,0,0,.08);
+}
+
+.cardTitle {
+  margin: 0 0 10px;
+  font-size: 15px;
+  font-weight: 1000;
+}
+
+.chartBox {
+  width: 100%;
+  height: 340px;
+  min-height: 340px;
+}
+
+/* 반응형: 화면 좁으면 KPI/그래프 줄바꿈 */
+@media (max-width: 1100px) {
+  .kpiGrid { grid-template-columns: repeat(2, 1fr); }
+  .adash { grid-template-columns: 1fr; }
+}

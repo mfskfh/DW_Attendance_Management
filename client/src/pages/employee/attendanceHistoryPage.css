@@ -1,0 +1,102 @@
+.my-wrap {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.my-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.my-title {
+  font-size: 20px;
+  font-weight: 1000;
+}
+
+.my-select {
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  font-weight: 900;
+}
+
+.my-today {
+  margin-top: 16px;
+}
+
+.my-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 6px 14px rgba(0,0,0,.06);
+}
+
+.my-cardTitle {
+  font-weight: 900;
+  opacity: .7;
+}
+
+.my-status {
+  margin-top: 10px;
+  font-size: 26px;
+  font-weight: 1000;
+}
+
+.my-times {
+  margin-top: 12px;
+  display: flex;
+  gap: 30px;
+}
+
+.my-times span {
+  font-size: 12px;
+  opacity: .6;
+}
+
+.my-times strong {
+  display: block;
+  font-size: 16px;
+}
+
+.my-list {
+  margin-top: 18px;
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 6px 14px rgba(0,0,0,.06);
+}
+
+.my-row {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  padding: 12px 14px;
+  border-bottom: 1px solid #eee;
+  font-weight: 900;
+  align-items: center;
+}
+
+.my-row:last-child {
+  border-bottom: none;
+}
+
+.my-badge {
+  padding: 6px 10px;
+  border-radius: 999px;
+  width: fit-content;
+  font-size: 12px;
+}
+
+.my-badge.출근 { background: rgba(74,222,128,.2); color: #15803d; }
+.my-badge.지각 { background: rgba(250,204,21,.2); color: #854d0e; }
+.my-badge.조퇴 { background: rgba(251,113,133,.2); color: #be123c; }
+.my-badge.휴가 { background: rgba(96,165,250,.2); color: #1d4ed8; }
+.my-badge.미출근 { background: rgba(148,163,184,.2); color: #334155; }
+.my-badge.결석 { background: rgba(239,68,68,.2); color: #b91c1c; }
+
+.my-status.출근 { color: #15803d; }
+.my-status.지각 { color: #854d0e; }
+.my-status.조퇴 { color: #be123c; }
+.my-status.휴가 { color: #1d4ed8; }
+.my-status.미출근 { color: #334155; }
+.my-status.결석 { color: #b91c1c; }

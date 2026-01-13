@@ -1,0 +1,70 @@
+.rc-wrap {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.rc-title {
+  font-size: 22px;
+  font-weight: 1000;
+  margin-bottom: 12px;
+}
+
+.rc-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 6px 14px rgba(0,0,0,.06);
+}
+
+.rc-field {
+  margin-bottom: 14px;
+}
+
+.rc-label {
+  font-weight: 900;
+  margin-bottom: 6px;
+  font-size: 13px;
+  opacity: .8;
+}
+
+.rc-field input,
+.rc-field select,
+.rc-field textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  font-weight: 900;
+  font-size: 14px;
+}
+
+.rc-field textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.rc-actions {
+  margin-top: 18px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.rc-cancel {
+  background: #e5e7eb;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-weight: 1000;
+  cursor: pointer;
+}
+
+.rc-submit {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-weight: 1000;
+  cursor: pointer;
+}

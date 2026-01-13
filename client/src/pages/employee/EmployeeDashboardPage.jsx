@@ -1,128 +1,102 @@
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../app/auth/useAuth";
+import {
+  PieChart, Pie, Cell,
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer
+} from "recharts";
 import "./employeeDashboard.css";
 
-export default function EmployeeDashboardPage() {
-  const stats = [
-    { label: "출근", value: 452, sub: "+ 2 new employees added!", icon: "👤" },
-    { label: "외출", value: 360, sub: "−10% Less than yesterday", icon: "🧭" },
-    { label: "휴가", value: 30, sub: "+3% Increase than yesterday", icon: "🧳" },
-    { label: "지각", value: 62, sub: "+3% Increase than yesterday", icon: "⏰" },
-    { label: "조퇴", value: 6, sub: "−10% Less than yesterday", icon: "🌙" },
-    { label: "결석", value: 42, sub: "2% Increase than yesterday", icon: "📅" },
-  ];
+export default function EmployeeHomePage() {
+  const navigate = useNavigate();
+  const { name } = useAuth();
 
-  const chartPoints = [60, 72, 58, 74, 82, 55, 68, 42, 60, 71, 58, 40, 63];
+  const today = new Date().toLocaleDateString("ko-KR");
 
-  return (
-    <div>
-      <div className="edb-breadcrumb">
-        Dashboard <span className="edb-bc-sep">▸</span> Attendance Insights
-      </div>
-
-      <section className="edb-grid">
-        <div className="edb-card edb-card-big">
-          <div className="edb-big-time">
-            <div className="edb-sun">☀️</div>
-            <div>
-              <div className="edb-time">8:02:09 AM</div>
-              <div className="edb-muted">Realtime Insight</div>
-            </div>
-          </div>
-
-          <div className="edb-big-date">
-            <div className="edb-muted">Today:</div>
-            <div className="edb-date">2nd August 2023</div>
-          </div>
-
-          <button className="edb-primary-btn">⚙ Advanced Configuration</button>
-        </div>
-
-        {stats.map((s) => (
-          <div className="edb-card edb-stat" key={s.label}>
-            <div className="edb-stat-top">
-              <div>
-                <div className="edb-stat-value">{s.value}</div>
-                <div className="edb-stat-label">{s.label}</div>
-              </div>
-              <div className="edb-stat-icon">{s.icon}</div>
-            </div>
-            <div className="edb-stat-sub">{s.sub}</div>
-          </div>
-        ))}
-      </section>
-
-      <section className="edb-card edb-chart">
-        <div className="edb-chart-head">
-          <div className="edb-chart-title">출결현황</div>
-          <div className="edb-chart-tabs">
-            <label className="edb-radio">
-              <input type="radio" name="range" defaultChecked /> Daily
-            </label>
-            <label className="edb-radio">
-              <input type="radio" name="range" /> Weekly
-            </label>
-            <label className="edb-radio">
-              <input type="radio" name="range" /> Monthly
-            </label>
-            <button className="edb-ghost-btn" title="설정">⚙</button>
-          </div>
-        </div>
-
-        <div className="edb-chart-body">
-          <SimpleLineChart points={chartPoints} />
-          <div className="edb-xlabels">
-            {["01 Aug","02 Aug","03 Aug","04 Aug","07 Aug","08 Aug","09 Aug","10 Aug","11 Aug","14 Aug","15 Aug","16 Aug"].map((d) => (
-              <div className="edb-xlabel" key={d}>{d}</div>
-            ))}
-          </div>
-        </div>
-      </section>
-    </div>
-  );
-}
-
-function SimpleLineChart({ points = [] }) {
-  const w = 1000;
-  const h = 240;
-  const pad = 18;
-
-  if (!points.length) return null;
-
-  const max = Math.max(...points);
-  const min = Math.min(...points);
-  const span = Math.max(1, max - min);
-
-  const xStep = (w - pad * 2) / (points.length - 1);
-  const toXY = (v, i) => {
-    const x = pad + i * xStep;
-    const y = pad + (h - pad * 2) * (1 - (v - min) / span);
-    return [x, y];
+  const todayStatus = {
+    status: "출근",
+    inTime: "08:58",
+    outTime: "-"
   };
 
-  const d = points
-    .map((v, i) => {
-      const [x, y] = toXY(v, i);
-      return `${i === 0 ? "M" : "L"} ${x} ${y}`;
-    })
-    .join(" ");
+  const pieData = [
+    { name: "출근", value: 18 },
+    { name: "지각", value: 2 },
+    { name: "휴가", value: 1 },
+    { name: "결석", value: 0 },
+  ];
+
+  const barData = [
+    { day: "월", 출근: 1, 지각: 0, 결석: 0 },
+    { day: "화", 출근: 1, 지각: 0, 결석: 0 },
+    { day: "수", 출근: 0, 지각: 1, 결석: 0 },
+    { day: "목", 출근: 1, 지각: 0, 결석: 0 },
+    { day: "금", 출근: 1, 지각: 0, 결석: 0 },
+    { day: "토", 출근: 0, 지각: 0, 결석: 0 },
+    { day: "일", 출근: 0, 지각: 0, 결석: 0 },
+  ];
 
   return (
-    <svg className="edb-svg" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none">
-      {[0, 1, 2, 3].map((i) => (
-        <line
-          key={i}
-          x1="0"
-          x2={w}
-          y1={pad + ((h - pad * 2) / 3) * i}
-          y2={pad + ((h - pad * 2) / 3) * i}
-          className="edb-gridline"
-        />
-      ))}
-      <path d={`${d} L ${w - pad} ${h - pad} L ${pad} ${h - pad} Z`} className="edb-area" />
-      <path d={d} className="edb-line" />
-      {points.map((v, i) => {
-        const [x, y] = toXY(v, i);
-        return <circle key={i} cx={x} cy={y} r={4} className="edb-dot" />;
-      })}
-    </svg>
+    <div className="ed-wrap">
+      <h2 className="ed-title">대시보드</h2>
+      <div className="ed-sub">{name}님 · {today}</div>
+
+      <div className="ed-grid">
+
+        {/* 오늘 출결 */}
+        <div className="ed-card">
+          <h3>오늘 출결</h3>
+          <div className="ed-status">{todayStatus.status}</div>
+          <div className="ed-times">
+            <span>출근 {todayStatus.inTime}</span>
+            <span>퇴근 {todayStatus.outTime}</span>
+          </div>
+        </div>
+
+        {/* 출결 비율 */}
+        <div className="ed-card">
+          <h3>이번 달 출결 비율</h3>
+          <div className="chartBox">
+            <ResponsiveContainer width="100%">
+              <PieChart>
+                <Pie data={pieData} dataKey="value" outerRadius={80}>
+                  {pieData.map((_, i) => (
+                    <Cell key={i} fill={["#4ade80","#facc15","#60a5fa","#f87171"][i]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* 주간 그래프 */}
+        <div className="ed-card full">
+          <h3>최근 7일 출결</h3>
+          <div className="chartBox">
+            <ResponsiveContainer width="100%">
+              <BarChart data={barData}>
+                <XAxis dataKey="day" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="출근" fill="#4ade80" />
+                <Bar dataKey="지각" fill="#facc15" />
+                <Bar dataKey="결석" fill="#f87171" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* 빠른 메뉴 */}
+        <div className="ed-card">
+          <h3>빠른 메뉴</h3>
+          <div className="ed-menu">
+            <button onClick={() => navigate("/employee/attendance")}>내 출결 확인</button>
+            <button onClick={() => navigate("/employee/requests")}>나의 요청 목록</button>
+            <button onClick={() => navigate("/employee/requests/new")}>요청 작성</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
   );
 }
