@@ -47,7 +47,6 @@
 }
 
 /* 헤더(기간 버튼) */
-.dashMain { }
 .dashHead {
   display: flex;
   align-items: center;
@@ -63,7 +62,7 @@
 .dashTabs button {
   margin-left: 6px;
   padding: 8px 10px;
-  border-radius: 10px;
+  border-radius: 999px;
   border: 1px solid #ddd;
   background: #f6f6f6;
   font-weight: 900;
@@ -81,6 +80,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
+  margin-top: 16px;
 }
 
 .adash-card {

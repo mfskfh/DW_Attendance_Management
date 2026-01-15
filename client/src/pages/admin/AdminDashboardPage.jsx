@@ -7,9 +7,9 @@ import {
 import "./adminDashboard.css";
 
 /* mock data */
-const todayStats = { 출근: 32, 지각: 3, 조퇴: 2, 휴가: 4, 미출근: 2 };
-const weekStats  = { 출근: 210, 지각: 18, 조퇴: 11, 휴가: 22, 미출근: 9 };
-const monthStats = { 출근: 880, 지각: 54, 조퇴: 31, 휴가: 61, 미출근: 21 };
+const todayStats = { 출근: 32, 지각: 3, 조퇴: 2, 결석: 4, 미출근: 2 , 휴가: 4};
+const weekStats  = { 출근: 210, 지각: 18, 조퇴: 11, 결석: 22, 미출근: 9, 휴가: 23 };
+const monthStats = { 출근: 880, 지각: 54, 조퇴: 31, 결석: 61, 미출근: 21, 휴가: 53};
 
 const dailyTrend = [
   { day: "월", 출근: 30, 지각: 3, 조퇴: 1, 휴가: 4, 미출근: 1 },
@@ -19,7 +19,7 @@ const dailyTrend = [
   { day: "금", 출근: 27, 지각: 4, 조퇴: 2, 휴가: 6, 미출근: 3 },
 ];
 
-const COLORS = ["#4ade80", "#facc15", "#fb7185", "#60a5fa", "#94a3b8"];
+const COLORS = ["#22c55e", "#f59e0b", "#fb7185", "#ef4444", "#94a3b8", "#60a5fa"];
 
 export default function AdminDashboardPage() {
   const [range, setRange] = useState("today");
