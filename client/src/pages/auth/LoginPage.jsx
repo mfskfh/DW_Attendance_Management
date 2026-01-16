@@ -1,25 +1,35 @@
 // src/pages/auth/LoginPage.jsx
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { setAuth, getAuthMessage, clearAuthMessage } from "../../app/auth/authStore";
 import "./loginPage.css";
 
 const API_BASE = "http://127.0.0.1:4000";
 
-/** 전환 타이밍(느림-빠름-느림은 CSS easing으로 처리) */
-const OUT_MS = 350;  // 1) 텍스트 OUT
-const MOVE_MS = 650; // 2) 배경/카드 이동(겹침 포함)
-const IN_MS = 350;   // 3) 텍스트 IN
+// 느림-빠름-느림은 CSS easing으로 처리
+const OUT_MS = 500;     // 1) 텍스트 OUT
+const MOVE_MS = 1300;   // 2) 배경/카드 이동
+const IN_MS = 450;      // 3) 텍스트 IN
+const SWAP_AT = 0.55;   // move 중간쯤에서 카드 내용/그림자/색 교체
 
 export default function LoginPage() {
   const navigate = useNavigate();
 
+  // role = "현재 화면 상태(전환 끝난 뒤 기준)"
   const [role, setRole] = useState("employee"); // employee | admin
+
+  // animFrom = "전환 중 기준 role(끝날 때까지 고정)"
+  const [animFrom, setAnimFrom] = useState("employee");
+  const [animTo, setAnimTo] = useState(null); // employee | admin | null
+  const [phase, setPhase] = useState("idle"); // idle | textOut | move | textIn
+  const [switching, setSwitching] = useState(false);
+
+  // 카드에 실제로 표시되는 역할(전환 중간에 바뀜)
+  const [displayRole, setDisplayRole] = useState("employee");
+
   const [mode, setMode] = useState("login"); // login | register
 
-  const [switching, setSwitching] = useState(false);
-  const [nextRole, setNextRole] = useState(null); // employee | admin | null
-  const [phase, setPhase] = useState("idle"); // idle | textOut | move | textIn
+  const timers = useRef([]);
 
   const [infoMessage, setInfoMessage] = useState(() => {
     const msg = getAuthMessage();
@@ -33,41 +43,27 @@ export default function LoginPage() {
     return () => clearTimeout(t);
   }, [infoMessage]);
 
-  const isEmployee = role === "employee";
+  useEffect(() => {
+    return () => {
+      timers.current.forEach(clearTimeout);
+      timers.current = [];
+    };
+  }, []);
 
   const hero = useMemo(() => {
-    return isEmployee
+    const isEmp = displayRole === "employee";
+    return isEmp
       ? { title: "ATTENDANCE\nMANAGEMENT", slogan: "Comfortable commute\nbetter workday" }
       : { title: "ATTENDANCE\nMANAGEMENT", slogan: "Manage attendance\nwith ease" };
-  }, [isEmployee]);
+  }, [displayRole]);
 
-  const titleText =
-    mode === "login"
-      ? isEmployee
-        ? "EMPLOYEE LOGIN"
-        : "ADMIN LOGIN"
-      : isEmployee
-      ? "EMPLOYEE SIGN UP"
-      : "ADMIN SIGN UP";
+  const titleText = useMemo(() => {
+    const isEmp = displayRole === "employee";
+    if (mode === "login") return isEmp ? "EMPLOYEE LOGIN" : "ADMIN LOGIN";
+    return isEmp ? "EMPLOYEE SIGN UP" : "ADMIN SIGN UP";
+  }, [displayRole, mode]);
 
-  const nextHero = useMemo(() => {
-    if (!nextRole) return null;
-    return nextRole === "employee"
-      ? { title: "ATTENDANCE\nMANAGEMENT", slogan: "Comfortable commute\nbetter workday" }
-      : { title: "ATTENDANCE\nMANAGEMENT", slogan: "Manage attendance\nwith ease" };
-  }, [nextRole]);
-
-  const nextTitleText = useMemo(() => {
-    if (!nextRole) return "";
-    const nextIsEmp = nextRole === "employee";
-    return mode === "login"
-      ? nextIsEmp
-        ? "EMPLOYEE LOGIN"
-        : "ADMIN LOGIN"
-      : nextIsEmp
-      ? "EMPLOYEE SIGN UP"
-      : "ADMIN SIGN UP";
-  }, [nextRole, mode]);
+  const switchText = displayRole === "employee" ? "ADMIN LOGIN" : "EMPLOYEE LOGIN";
 
   const goAfterLogin = (r) => {
     if (r === "admin") navigate("/admin");
@@ -77,107 +73,131 @@ export default function LoginPage() {
   const startSwitch = () => {
     if (switching) return;
 
-    const target = role === "employee" ? "admin" : "employee";
+    const from = role;
+    const to = from === "employee" ? "admin" : "employee";
+
     setSwitching(true);
-    setNextRole(target);
     setMode("login");
 
-    // 1) 텍스트 OUT
+    // ✅ 전환 동안 기준 role은 from으로 고정 (튕김 방지 핵심)
+    setAnimFrom(from);
+    setAnimTo(to);
+
+    // 텍스트 out → move → text in
     setPhase("textOut");
 
-    // 2) 배경/카드 이동
-    setTimeout(() => setPhase("move"), OUT_MS);
+    timers.current.push(
+      setTimeout(() => {
+        setPhase("move");
+      }, OUT_MS)
+    );
 
-    // 역할 실제 변경 (move 끝나는 타이밍)
-    setTimeout(() => {
-      setRole(target);
-      setPhase("textIn");
-    }, OUT_MS + MOVE_MS);
+    // ✅ 카드가 배경에 가려졌을 타이밍에 표시 내용만 바꿈(중요)
+    timers.current.push(
+      setTimeout(() => {
+        setDisplayRole(to); // 카드 텍스트/색/그림자 바뀜 (가려져 있어서 자연스러움)
+      }, OUT_MS + Math.floor(MOVE_MS * SWAP_AT))
+    );
 
-    // 3) 텍스트 IN 종료 후 정리
-    setTimeout(() => {
-      setPhase("idle");
-      setSwitching(false);
-      setNextRole(null);
-    }, OUT_MS + MOVE_MS + IN_MS);
+    // move 끝난 뒤: 실제 role 확정 + textIn
+    timers.current.push(
+      setTimeout(() => {
+        setRole(to);     // 이제부터 새 화면 기준
+        setAnimTo(null); // 전환 종료 준비
+        setPhase("textIn");
+      }, OUT_MS + MOVE_MS)
+    );
+
+    timers.current.push(
+      setTimeout(() => {
+        setPhase("idle");
+        setSwitching(false);
+        setAnimFrom(to); // 다음 전환의 from 기준을 최신으로
+      }, OUT_MS + MOVE_MS + IN_MS)
+    );
   };
 
+  // ✅ 배경/카드 이동 방향은 "animFrom 기준"
+  // employee 화면 -> panel(색)은 left:0 에서 left:50vw 로
+  // admin 화면 -> panel(색)은 left:50vw 에서 left:0 로
+  const dir = useMemo(() => {
+    if (!switching || phase !== "move") return "none";
+    return animFrom === "employee" ? "toRight" : "toLeft";
+  }, [switching, phase, animFrom]);
+
   return (
-    <div className={`lp lp--${role} ${switching ? "is-switching" : ""} ph-${phase}`}>
+    <div
+      className={[
+        "lp",
+        `lp--${animFrom}`,     // ✅ 전환 중엔 from 유지
+        `ph-${phase}`,
+        switching ? "is-switching" : "",
+        `dir-${dir}`,
+      ].join(" ")}
+    >
       {infoMessage && <div className="lp-toast">{infoMessage}</div>}
 
-      {/* 배경: current + next(전환 중) */}
-      <div className="lp-bg" aria-hidden="true">
-        {/* current */}
-        <div className="lp-bgTrack current">
-          <div className="lp-pane lp-pane--white" />
-          <div className={`lp-pane lp-pane--color ${role}`}>
-            {role === "employee" ? <div className="lp-circles" /> : <Triangles />}
-          </div>
-        </div>
+      {/* ✅ 배경(반쪽 컬러 패널 1개) + 내부에서 색/패턴만 크로스페이드 */}
+      <BackgroundHalfPanel
+        from={animFrom}
+        to={animTo}
+        switching={switching}
+        phase={phase}
+      />
 
-        {/* next */}
-        {nextRole && (
-          <div className={`lp-bgTrack next ${nextRole}`}>
-            <div className="lp-pane lp-pane--white" />
-            <div className={`lp-pane lp-pane--color ${nextRole}`}>
-              {nextRole === "employee" ? <div className="lp-circles" /> : <Triangles />}
-            </div>
-          </div>
-        )}
-      </div>
+      {/* ✅ 텍스트는 한 벌만: textOut → move 동안 숨김 → textIn */}
+      <HeroOne
+        role={displayRole}
+        title={hero.title}
+        slogan={hero.slogan}
+        phase={phase}
+      />
 
-      {/* 텍스트: current OUT + next IN */}
-      <HeroSplit role={role} title={hero.title} slogan={hero.slogan} kind="current" />
-      {nextRole && nextHero && (
-        <HeroSplit role={nextRole} title={nextHero.title} slogan={nextHero.slogan} kind="next" />
-      )}
-
-      {/* 카드: current OUT + next IN (겹침 시 current가 배경 뒤로) */}
-      <div className="lp-cardSceneWrap">
-        {/* current 카드 */}
-        <div className="lp-cardScene current">
-          <div className={`lp-glow ${role}`} aria-hidden="true" />
-          <div className="lp-card">
-            <h2 className="lp-cardTitle">{titleText}</h2>
-
-            <LoginBox
-              role={role}
-              mode={mode}
-              setMode={setMode}
-              onSwitchRole={startSwitch}
-              switchText={isEmployee ? "ADMIN LOGIN" : "EMPLOYEE LOGIN"}
-              onLoggedIn={goAfterLogin}
-              switching={switching}
-            />
-          </div>
-        </div>
-
-        {/* next 카드(전환 중엔 클릭 막고, 전환 끝나면 role이 바뀌어 current가 됨) */}
-        {nextRole && (
-          <div className={`lp-cardScene next ${nextRole}`}>
-            <div className={`lp-glow ${nextRole}`} aria-hidden="true" />
-            <div className="lp-card">
-              <h2 className="lp-cardTitle">{nextTitleText}</h2>
-
-              <LoginBox
-                role={nextRole}
-                mode={"login"}
-                setMode={setMode}
-                onSwitchRole={() => {}}
-                switchText={nextRole === "employee" ? "ADMIN LOGIN" : "EMPLOYEE LOGIN"}
-                onLoggedIn={goAfterLogin}
-                switching={true}
-              />
-            </div>
-          </div>
-        )}
-      </div>
+      {/* ✅ 카드도 한 벌만(내용은 move 중간에 바뀜) */}
+      <CardOne
+        role={displayRole}
+        titleText={titleText}
+        mode={mode}
+        setMode={setMode}
+        onSwitchRole={startSwitch}
+        switchText={switchText}
+        onLoggedIn={goAfterLogin}
+        switching={switching}
+      />
     </div>
   );
 }
 
-/* 배경 도형(관리자 삼각형) */
+/* ------------------ 배경: 반쪽 패널 1개 + 색/패턴 크로스페이드 ------------------ */
+function BackgroundHalfPanel({ from, to, switching, phase }) {
+  const fromIsEmp = from === "employee";
+  const toIsEmp = to === "employee";
+
+  // move 구간에서만 to 레이어 opacity 올라감
+  const showTo = Boolean(to) && (phase === "move" || phase === "textIn");
+
+  return (
+    <div className="lp-bg" aria-hidden="true">
+      <div className="lp-panel">
+        {/* from layer */}
+        <div className={`lp-panelLayer ${fromIsEmp ? "blue" : "orange"} on`}>
+          {fromIsEmp ? <div className="lp-circles" /> : <Triangles />}
+        </div>
+
+        {/* to layer */}
+        {to && (
+          <div className={`lp-panelLayer ${toIsEmp ? "blue" : "orange"} ${showTo ? "on" : ""}`}>
+            {toIsEmp ? <div className="lp-circles" /> : <Triangles />}
+          </div>
+        )}
+      </div>
+
+      {/* ✅ 카드 가리기용: move 구간에만 패널이 카드 위로 올라오게 */}
+      <div className={`lp-cover ${phase === "move" ? "on" : ""}`} />
+    </div>
+  );
+}
+
 function Triangles() {
   return (
     <div className="lp-triangles">
@@ -190,61 +210,80 @@ function Triangles() {
   );
 }
 
-/* 타이틀/서브: base(흰색) + cut(배경색) 레이어 */
-function HeroSplit({ role, title, slogan, kind = "current" }) {
+/* ------------------ 텍스트: 한 벌 ------------------ */
+function HeroOne({ role, title, slogan, phase }) {
   const tLines = title.split("\n");
   const sLines = slogan.split("\n");
 
   return (
-    <div className={`lp-hero lp-hero--${role} ${kind}`} aria-hidden="true">
+    <div className={`lp-heroOne role-${role} ph-${phase}`} aria-hidden="true">
       <div className="lp-heroLayer base">
-        <div className="lp-heroLayerInner">
-          <h1 className="lp-heroTitle">
-            {tLines.map((l, i) => (
-              <span key={i}>
-                {l}
-                <br />
-              </span>
-            ))}
-          </h1>
+        <h1 className="lp-heroTitle">
+          {tLines.map((l, i) => (
+            <span key={i}>
+              {l}
+              <br />
+            </span>
+          ))}
+        </h1>
 
-          <p className="lp-heroSlogan">
-            {sLines.map((l, i) => (
-              <span key={i}>
-                {l}
-                <br />
-              </span>
-            ))}
-          </p>
-        </div>
+        <p className="lp-heroSlogan">
+          {sLines.map((l, i) => (
+            <span key={i}>
+              {l}
+              <br />
+            </span>
+          ))}
+        </p>
       </div>
 
       <div className={`lp-heroLayer cut ${role}`}>
-        <div className="lp-heroLayerInner">
-          <h1 className="lp-heroTitle">
-            {tLines.map((l, i) => (
-              <span key={i}>
-                {l}
-                <br />
-              </span>
-            ))}
-          </h1>
+        <h1 className="lp-heroTitle">
+          {tLines.map((l, i) => (
+            <span key={i}>
+              {l}
+              <br />
+            </span>
+          ))}
+        </h1>
 
-          <p className="lp-heroSlogan">
-            {sLines.map((l, i) => (
-              <span key={i}>
-                {l}
-                <br />
-              </span>
-            ))}
-          </p>
-        </div>
+        <p className="lp-heroSlogan">
+          {sLines.map((l, i) => (
+            <span key={i}>
+              {l}
+              <br />
+            </span>
+          ))}
+        </p>
       </div>
     </div>
   );
 }
 
-/* ---------- Login Box (네 로그인 방식 그대로 유지) ---------- */
+/* ------------------ 카드: 한 벌 ------------------ */
+function CardOne({ role, titleText, mode, setMode, onSwitchRole, switchText, onLoggedIn, switching }) {
+  return (
+    <div className={`lp-cardSceneOne role-${role}`}>
+      <div className={`lp-glow ${role}`} aria-hidden="true" />
+
+      <div className="lp-card">
+        <h2 className="lp-cardTitle">{titleText}</h2>
+
+        <LoginBox
+          role={role}
+          mode={mode}
+          setMode={setMode}
+          onSwitchRole={onSwitchRole}
+          switchText={switchText}
+          onLoggedIn={onLoggedIn}
+          switching={switching}
+        />
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Login Box (기존 로그인 방식 유지) ---------- */
 function LoginBox({ role, mode, setMode, onSwitchRole, switchText, onLoggedIn, switching }) {
   const loginType = role;
 
@@ -312,20 +351,10 @@ function LoginBox({ role, mode, setMode, onSwitchRole, switchText, onLoggedIn, s
   return (
     <div className="lp-form">
       {mode === "register" && (
-        <input
-          className="lp-input"
-          placeholder="NAME"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
+        <input className="lp-input" placeholder="NAME" value={name} onChange={(e) => setName(e.target.value)} />
       )}
 
-      <input
-        className="lp-input"
-        placeholder="ID"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-      />
+      <input className="lp-input" placeholder="ID" value={username} onChange={(e) => setUsername(e.target.value)} />
 
       <input
         className="lp-input"
@@ -335,12 +364,7 @@ function LoginBox({ role, mode, setMode, onSwitchRole, switchText, onLoggedIn, s
         onChange={(e) => setPassword(e.target.value)}
       />
 
-      <button
-        className="lp-btn lp-btnMain"
-        type="button"
-        onClick={submit}
-        disabled={loading || switching}
-      >
+      <button className="lp-btn lp-btnMain" type="button" onClick={submit} disabled={loading || switching}>
         {loading ? "처리중..." : mode === "login" ? "LOGIN" : "SIGN UP"}
       </button>
 

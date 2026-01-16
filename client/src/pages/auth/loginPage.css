@@ -10,6 +10,12 @@
 :root {
   --blue: #06a9e6;
   --orange: #ff8a1f;
+
+  /* 속도/이징 */
+  --ease: cubic-bezier(0.2, 0.9, 0.2, 1);
+  --outMs: 500ms;
+  --moveMs: 1300ms;
+  --inMs: 450ms;
 }
 
 * { box-sizing: border-box; }
@@ -21,14 +27,14 @@ html, body, #root { height: 100%; }
   position: relative;
   overflow: hidden;
   font-family: "Fairview", system-ui, sans-serif;
+  background: #fff;
 }
 
-/* 클릭 문제 방지: 배경/장식은 전부 클릭 무시 */
+/* 클릭 문제 방지: 배경/장식은 클릭 무시 */
 .lp-bg,
 .lp-bg * ,
-.lp-hero,
-.lp-hero * ,
-.lp-glow {
+.lp-heroOne,
+.lp-heroOne * {
   pointer-events: none;
 }
 
@@ -43,37 +49,59 @@ html, body, #root { height: 100%; }
   background: rgba(17,24,39,0.9);
   color: #fff;
   font-weight: 700;
-  z-index: 50;
+  z-index: 100;
   pointer-events: auto;
 }
 
-/* ----- Background Split ----- */
-.lp-bg {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  z-index: 1;
+/* =========================
+   BACKGROUND : 반쪽 패널 1개
+========================= */
+.lp-bg{
+  position:absolute;
+  inset:0;
+  z-index: 10; /* 기본은 카드보다 아래 */
+  overflow:hidden;
 }
 
-.lp-pane {
-  width: 50%;
-  height: 100%;
-  position: relative;
+/* 반쪽 컬러 패널 자체 */
+.lp-panel{
+  position:absolute;
+  top:0;
+  bottom:0;
+  width: 50vw;
+  overflow:hidden;
+  will-change: left;
 }
 
-.lp-pane--white { background: #fff; }
+/* employee 화면(컬러 왼쪽) 기본 */
+.lp.lp--employee .lp-panel{ left: 0; }
 
-/* employee: color left, admin: color right */
-.lp--employee .lp-pane--white { order: 2; }
-.lp--employee .lp-pane--color { order: 1; }
+/* admin 화면(컬러 오른쪽) 기본 */
+.lp.lp--admin .lp-panel{ left: 50vw; }
 
-.lp--admin .lp-pane--white { order: 1; }
-.lp--admin .lp-pane--color { order: 2; }
+/* move 단계에서 한번만 이동 */
+.lp.is-switching.ph-move.dir-toRight .lp-panel{
+  left: 50vw;
+  transition: left var(--moveMs) var(--ease);
+}
+.lp.is-switching.ph-move.dir-toLeft .lp-panel{
+  left: 0;
+  transition: left var(--moveMs) var(--ease);
+}
 
-.lp-pane--color.employee { background: var(--blue); }
-.lp-pane--color.admin { background: var(--orange); }
+/* 패널 내부 레이어(색/패턴 크로스페이드) */
+.lp-panelLayer{
+  position:absolute;
+  inset:0;
+  opacity: 0;
+  transition: opacity 900ms var(--ease);
+}
+.lp-panelLayer.on{ opacity: 1; }
 
-/* ----- Patterns (사진 느낌) ----- */
+.lp-panelLayer.blue{ background: var(--blue); }
+.lp-panelLayer.orange{ background: var(--orange); }
+
+/* 패턴 */
 .lp-circles{
   position:absolute;
   inset:0;
@@ -82,6 +110,7 @@ html, body, #root { height: 100%; }
     radial-gradient(circle at 94% 18%, rgba(255,255,255,0.16) 0 30%, transparent 31%),
     radial-gradient(circle at 70% 68%, rgba(255,255,255,0.14) 0 56%, transparent 57%),
     radial-gradient(circle at 14% 18%, rgba(255,255,255,0.10) 0 25%, transparent 26%);
+  opacity: 0.55;
 }
 
 .lp-triangles{
@@ -97,45 +126,57 @@ html, body, #root { height: 100%; }
   clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
   transform: rotate(8deg);
 }
-.lp-triangles .a{ top: 1%px; right: -20%; }
+.lp-triangles .a{ top: 1%; right: -20%; }
 .lp-triangles .b{ top: 40%; right: 4%; transform: rotate(-10deg); background: rgba(255,255,255,0.14); }
 .lp-triangles .c{ top: 23%; right: 72%; transform: rotate(14deg); background: rgba(255,255,255,0.12); }
 .lp-triangles .d{ top: 50%; right: 50%; transform: rotate(24deg); background: rgba(255,255,255,0.10); }
 .lp-triangles .e{ top: -17%; right: 12%; transform: rotate(-18deg); background: rgba(255,255,255,0.10); }
 
-/* ----- Hero: 경계(빨간 선)까지 크게 + 서브텍스트 경계 정렬 ----- */
-.lp-hero{
-  position: absolute;
-  inset: 0;
-  z-index: 5;
+/* ✅ move 구간에만 카드 가리도록 덮개를 위로 올림 */
+.lp-cover{
+  position:absolute;
+  inset:0;
+  z-index: 11; /* 기본은 낮음 */
+  pointer-events:none;
+}
+.lp-cover.on{
+  z-index: 40; /* move 동안엔 카드 위 */
 }
 
-.lp-heroLayer{
-  position: absolute;
+/* =========================
+   HERO : 한 벌만
+========================= */
+.lp-heroOne{
+  position:absolute;
+  inset:0;
+  z-index: 20;
+}
+
+/* 텍스트 위치는 "현재 role 기준"으로 고정 */
+.lp-heroOne .lp-heroLayer{
+  position:absolute;
   top: 54px;
 }
 
-/*
-  핵심:
-  - employee: 왼쪽 컬러 영역 끝(=경계선)까지 크게
-  - admin: 오른쪽 컬러 영역 끝(=경계선)까지 크게
-*/
-.lp--employee .lp-heroLayer{ left: 48px; right: 50vw; } /* 경계까지 */
-.lp--admin .lp-heroLayer{ right: 48px; left: 50vw; text-align: right; } /* 경계까지 */
+/* employee: 컬러 패널 왼쪽 → 텍스트도 왼쪽(경계까지) */
+.lp-heroOne.role-employee .lp-heroLayer{ left: 48px; right: 50vw; }
 
-/* 타이틀을 경계까지 “가득” 보이게 */
+/* admin: 컬러 패널 오른쪽 → 텍스트도 오른쪽(경계까지) */
+.lp-heroOne.role-admin .lp-heroLayer{ right: 48px; left: 50vw; text-align: right; }
+
+/* 타이틀 크기 */
 .lp-heroTitle{
   margin: 0;
   line-height: 0.82;
   letter-spacing: 1px;
   font-weight: 400;
-  font-size: 240px; /* ✅ 더 크게 */
+  font-size: 240px;
   color: #fff;
   text-transform: uppercase;
   width: 100%;
 }
 
-/* 서브 텍스트는 경계선에 맞춰 “오른쪽 정렬” (employee일 때 특히 중요) */
+/* 서브 텍스트 */
 .lp-heroSlogan{
   margin: 26px 0 0;
   line-height: 0.95;
@@ -145,100 +186,125 @@ html, body, #root { height: 100%; }
   width: 100%;
 }
 
-/* employee: 서브는 경계선에 붙게 오른쪽 정렬 */
-.lp--employee .lp-heroSlogan{
+/* employee: 서브는 경계선 맞춰 오른쪽 정렬 */
+.lp-heroOne.role-employee .lp-heroSlogan{
   text-align: right;
-  padding-right: 10px; /* 경계선 살짝 여백 */
+  padding-right: 10px;
 }
 
-/* admin: 이미 오른쪽 정렬 */
-.lp--admin .lp-heroSlogan{
-  text-align: left; /* admin은 배경이 오른쪽이라, 문구가 경계 쪽으로 가려면 left가 자연스러움 */
+/* admin: 문구가 경계쪽으로 붙으려면 left가 자연스러움(네 설정 유지) */
+.lp-heroOne.role-admin .lp-heroSlogan{
+  text-align: left;
   padding-left: 10px;
 }
 
-/* 1) base는 흰색 */
-.lp-heroLayer.base{
-  color: #fff;
-}
+/* split 색 바꾸기 */
+.lp-heroLayer.cut{ color: var(--blue); }
 
-/* 2) cut 레이어: 흰 영역에서만 보이는 “배경색 글자” */
-.lp-heroLayer.cut{
-  color: var(--blue);
-}
-
-/* employee: 흰 영역=오른쪽 절반 => 오른쪽만 보이게 */
-.lp--employee .lp-heroLayer.cut{
+/* employee: 흰 영역은 오른쪽 절반(50%~100%) */
+.lp-heroOne.role-employee .lp-heroLayer.cut{
   clip-path: inset(0 0 0 50%);
   color: var(--blue);
 }
 
-/* admin: 흰 영역=왼쪽 절반 => 왼쪽만 보이게 */
-.lp--admin .lp-heroLayer.cut{
+/* admin: 흰 영역은 왼쪽 절반(0~50%) */
+.lp-heroOne.role-admin .lp-heroLayer.cut{
   clip-path: inset(0 50% 0 0);
   color: var(--orange);
 }
 
-/* ----- Card placement ----- */
-.lp-cardScene{
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 50%;
-  z-index: 20; /* hero보다 위 */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: auto; /* ✅ 카드 영역 클릭 가능 */
+/* ===== 텍스트 애니메이션(한 벌) ===== */
+/* textOut: 카드 반대편 방향으로 OUT */
+.lp.ph-textOut .lp-heroOne{
+  transition: transform var(--outMs) var(--ease), opacity 120ms linear;
+}
+.lp.lp--employee.ph-textOut .lp-heroOne{ transform: translateX(120%); }
+.lp.lp--admin.ph-textOut .lp-heroOne{ transform: translateX(-120%); }
+
+/* move 동안은 숨김(중간에 보이는 문제 차단) */
+.lp.ph-move .lp-heroOne{
+  opacity: 0;
+  transform: translateX(0);
+  transition: opacity 120ms linear;
 }
 
-/* employee card on RIGHT */
-.lp--employee .lp-cardScene{ right: 0; }
-/* admin card on LEFT */
-.lp--admin .lp-cardScene{ left: 0; }
+/* textIn: 화면 밖에서 IN */
+.lp.ph-textIn .lp-heroOne{
+  opacity: 1;
+  transition: transform var(--inMs) var(--ease), opacity 120ms linear;
+}
+.lp.lp--employee.ph-textIn .lp-heroOne{ transform: translateX(0); }
+.lp.lp--admin.ph-textIn .lp-heroOne{ transform: translateX(0); }
 
-/* ✅ glow는 카드 뒤 장식, 클릭 방해 X */
+/* =========================
+   CARD : 한 벌만
+========================= */
+.lp-cardSceneOne{
+  position:absolute;
+  top:0; bottom:0;
+  width: 50vw;
+  z-index: 30;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  pointer-events: auto;
+  will-change: left;
+}
+
+/* employee 화면: 카드 오른쪽(흰쪽) */
+.lp-cardSceneOne{ left: 50vw; }
+
+/* admin 화면: 카드 왼쪽(흰쪽) */
+.lp-cardSceneOne.role-admin{ left: 0; }
+
+/* move 구간: 카드도 한 번만 반대로 이동 */
+.lp.is-switching.ph-move.dir-toRight .lp-cardSceneOne{
+  left: 0;
+  transition: left var(--moveMs) var(--ease);
+}
+.lp.is-switching.ph-move.dir-toLeft .lp-cardSceneOne{
+  left: 50vw;
+  transition: left var(--moveMs) var(--ease);
+}
+
+/* glow(그림자/광) — 카드 뒤 */
 .lp-glow{
   position:absolute;
-  width: 460px;
-  height: 560px;
+  width: 520px;
+  height: 620px;
   border-radius: 28px;
   filter: blur(34px);
   opacity: 0.35;
-  z-index: 19; /* 카드보다 뒤 */
+  z-index: 1;
+  pointer-events:none;
+  transition: background 500ms var(--ease), opacity 500ms var(--ease);
 }
+.lp-glow.employee{ background: var(--blue); }
+.lp-glow.admin{ background: var(--orange); }
 
-/* glow 위치를 카드 주변으로 */
-.lp--employee .lp-glow{
-  background: var(--blue);
-  right: 245px;
-}
-.lp--admin .lp-glow{
-  background: var(--orange);
-  left: 245px;
-}
-
+/* 카드 */
 .lp-card{
   width: 420px;
   border-radius: 22px;
   background: #fff;
   padding: 30px 26px 22px;
   position: relative;
-  z-index: 21; /* ✅ glow보다 앞 */
+  z-index: 2;
   box-shadow: 0 18px 48px rgba(0,0,0,0.12);
   pointer-events: auto;
 }
 
-/* Card title */
+/* 카드 타이틀 컬러 */
 .lp-cardTitle{
   margin: 0 0 22px;
   text-align: center;
   font-size: 46px;
   letter-spacing: 1px;
   font-weight: 400;
-  color: var(--blue);
+  transition: color 500ms var(--ease);
 }
-.lp--admin .lp-cardTitle{ color: var(--orange); }
+.lp-cardSceneOne.role-employee .lp-cardTitle{ color: var(--blue); }
+.lp-cardSceneOne.role-admin .lp-cardTitle{ color: var(--orange); }
 
 /* ---- Form ---- */
 .lp-form{
@@ -258,7 +324,6 @@ html, body, #root { height: 100%; }
   font-family: "Fairview", system-ui, sans-serif;
   letter-spacing: 1px;
   background: #fff;
-  pointer-events: auto;
 }
 
 .lp-btn{
@@ -269,7 +334,6 @@ html, body, #root { height: 100%; }
   font-family: "Fairview", system-ui, sans-serif;
   cursor: pointer;
   letter-spacing: 1px;
-  pointer-events: auto;
 }
 
 .lp-btn:disabled{
@@ -294,163 +358,10 @@ html, body, #root { height: 100%; }
 }
 
 @media (max-width: 900px){
-  .lp-bg{ flex-direction: column; }
-  .lp-pane{ width: 100%; height: 50%; }
-
-  .lp-cardScene{
-    width: 100%;
-    left: 0 !important;
-    right: 0 !important;
-  }
-
-  .lp-heroLayer{
-    left: 18px !important;
-    right: 18px !important;
-    text-align: left !important;
-  }
-
-  .lp-heroLayer.cut{
-    clip-path: none;
-    opacity: 0;
-  }
-
-  .lp--employee .lp-heroSlogan,
-  .lp--admin .lp-heroSlogan{
-    text-align: left;
-    padding: 0;
-  }
-}
-
-/* =========================
-   SWITCH ANIMATION (추가)
-   느림-빠름-느림: cubic-bezier
-========================= */
-.lp.is-switching .lp-bgTrack,
-.lp.is-switching .lp-cardScene,
-.lp.is-switching .lp-hero {
-  transition-timing-function: cubic-bezier(0.2, 0.9, 0.2, 1);
-}
-
-/* ----- 배경 트랙(2벌) ----- */
-.lp-bg { overflow: hidden; }
-.lp-bgTrack{
-  position:absolute;
-  inset:0;
-  display:flex;
-  width:100%;
-  height:100%;
-  will-change: transform;
-}
-
-/* 기본: current는 제자리, next는 화면 밖 대기 */
-.lp-bgTrack.current{ transform: translateX(0); }
-.lp--employee .lp-bgTrack.next.employee{ transform: translateX(100%); }
-.lp--employee .lp-bgTrack.next.admin{ transform: translateX(-100%); }
-
-.lp--admin .lp-bgTrack.next.admin{ transform: translateX(-100%); }
-.lp--admin .lp-bgTrack.next.employee{ transform: translateX(100%); }
-
-/* phase=move: 배경은 카드와 "반대 방향"으로 이동해야 함 */
-.lp.ph-move.lp--employee .lp-bgTrack.current{ transform: translateX(100%); transition: transform 650ms; }
-.lp.ph-move.lp--employee .lp-bgTrack.next{ transform: translateX(0); transition: transform 650ms; }
-
-.lp.ph-move.lp--admin .lp-bgTrack.current{ transform: translateX(-100%); transition: transform 650ms; }
-.lp.ph-move.lp--admin .lp-bgTrack.next{ transform: translateX(0); transition: transform 650ms; }
-
-/* ----- 카드 2벌 ----- */
-.lp-cardSceneWrap{
-  position:absolute;
-  inset:0;
-  z-index: 20;
-  pointer-events: none; /* 전환 중 next 카드 클릭 방지 */
-}
-.lp-cardScene{
-  position:absolute;
-  top:0; bottom:0;
-  width:50%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  will-change: transform;
-  pointer-events: auto;
-}
-
-/* current 위치(네 기존 로직 유지) */
-.lp--employee .lp-cardScene.current{ right:0; }
-.lp--admin .lp-cardScene.current{ left:0; }
-
-/* next는 반대편 화면 밖에서 대기 */
-.lp--employee .lp-cardScene.next.admin{ left:0; transform: translateX(-120%); }
-.lp--employee .lp-cardScene.next.employee{ right:0; transform: translateX(120%); }
-
-.lp--admin .lp-cardScene.next.employee{ right:0; transform: translateX(120%); }
-.lp--admin .lp-cardScene.next.admin{ left:0; transform: translateX(-120%); }
-
-/* phase=move: 카드와 배경이 서로 반대방향으로 이동 */
-.lp.ph-move.lp--employee .lp-cardScene.current{
-  transform: translateX(-120%);
-  transition: transform 650ms;
-}
-.lp.ph-move.lp--employee .lp-cardScene.next{
-  transform: translateX(0);
-  transition: transform 650ms;
-}
-
-.lp.ph-move.lp--admin .lp-cardScene.current{
-  transform: translateX(120%);
-  transition: transform 650ms;
-}
-.lp.ph-move.lp--admin .lp-cardScene.next{
-  transform: translateX(0);
-  transition: transform 650ms;
-}
-
-/* ✅ 겹침 구간에서 "카드가 배경 뒤에 가려지게" (current만 뒤로 보내기) */
-.lp.ph-move .lp-cardScene.current{ z-index: 8; }
-.lp.ph-move .lp-cardScene.next{ z-index: 22; }
-
-/* 더 확실히: move 구간 동안 current 카드 자체를 배경 아래로 */
-.lp.ph-move .lp-cardScene.current .lp-card{
-  z-index: 2;
-}
-.lp.ph-move .lp-bg{ z-index: 12; } /* 배경을 잠깐 위로 */
-.lp.ph-move .lp-hero{ z-index: 5; }
-
-/* move가 끝나면 원래 레이어로 복귀 (idle/textIn에서 자동) */
-.lp.ph-idle .lp-bg,
-.lp.ph-textIn .lp-bg{ z-index: 1; }
-
-/* ----- 텍스트 2벌 ----- */
-/* current 텍스트는 기본 제자리, next 텍스트는 화면 밖 대기 */
-.lp-hero.current{ opacity:1; }
-.lp-hero.next{ opacity:1; }
-
-.lp--employee .lp-hero.next{ transform: translateX(-120%); }
-.lp--admin .lp-hero.next{ transform: translateX(120%); }
-
-/* 1) phase=textOut : current가 '카드 반대편' 방향으로 OUT */
-.lp.ph-textOut.lp--employee .lp-hero.current{
-  transform: translateX(120%);
-  transition: transform 350ms;
-}
-.lp.ph-textOut.lp--admin .lp-hero.current{
-  transform: translateX(-120%);
-  transition: transform 350ms;
-}
-
-/* 3) phase=textIn : next가 화면 밖에서 IN */
-.lp.ph-textIn .lp-hero.next{
-  transform: translateX(0);
-  transition: transform 350ms;
-}
-
-/* textIn 동안 current는 보이지 않게 (겹침 방지) */
-.lp.ph-textIn .lp-hero.current{ opacity:0; transition: opacity 120ms; }
-
-/* 부드럽게: textOut/textIn 모두 ease in-out 느낌 */
-.lp.ph-textOut .lp-hero.current,
-.lp.ph-textIn .lp-hero.next,
-.lp.ph-move .lp-bgTrack,
-.lp.ph-move .lp-cardScene{
-  transition-timing-function: cubic-bezier(0.2, 0.9, 0.2, 1);
+  /* 모바일은 애니메이션 간소화 권장(필요하면 추가로 조정) */
+  .lp-panel{ width: 100vw; left: 0 !important; }
+  .lp-cardSceneOne{ width: 100vw; left: 0 !important; }
+  .lp-heroOne .lp-heroLayer{ left: 18px !important; right: 18px !important; text-align: left !important; }
+  .lp-heroLayer.cut{ clip-path: none; opacity: 0; }
+  .lp-heroSlogan{ text-align: left !important; padding: 0 !important; }
 }
