@@ -27,9 +27,9 @@ export default function LoginPage() {
   const [phase, setPhase] = useState("idle"); // idle | textOut | move | textIn
   const [dir, setDir] = useState(null); // toAdmin | toEmployee
 
-  // 배경 교체용 (crossfade)
+  // ✅ 배경 crossfade용
   const [bgNext, setBgNext] = useState(null);   // employee | admin | null
-  const [bgFade, setBgFade] = useState(false);  // next on/off (opacity)
+  const [bgFade, setBgFade] = useState(false);  // true면 base out + next in (동시)
 
   const timeouts = useRef([]);
 
@@ -91,25 +91,26 @@ export default function LoginPage() {
     // 1) 텍스트 OUT
     setPhase("textOut");
 
-    // 2) MOVE 시작: (여기서 카드 UI + 배경 crossfade 시작)
+    // 2) MOVE 시작: 카드 UI + 배경 동시 크로스페이드 시작
     timeouts.current.push(
       setTimeout(() => {
         setPhase("move");
+
+        // 카드(제목/그림자/버튼 라벨)
         setUiRole(target);
 
-        // ✅ 배경 next를 미리 올리고, 동시에 fade-in 시작
+        // ✅ 배경: next를 겹쳐 올리고, 동시에 base out + next in
         setBgNext(target);
         setBgFade(true);
       }, OUT_MS)
     );
 
-    // 2) MOVE 끝: 실제 role(레이아웃/텍스트 위치) 교체
+    // 2) MOVE 끝: 실제 role 교체 + 배경 정리(깜빡임 방지로 1프레임 뒤)
     timeouts.current.push(
       setTimeout(() => {
-        // ✅ 먼저 role을 바꿔서 base가 즉시 target 테마가 되게 만들고,
-        // ✅ next 제거는 "한 프레임 뒤"에 정리해서 빈 프레임/튀는 현상 제거
         setRole(target);
 
+        // ✅ role 바뀐 다음 프레임에서 next 제거 (순간 튐/빈프레임 방지)
         requestAnimationFrame(() => {
           setBgFade(false);
           setBgNext(null);
@@ -133,13 +134,13 @@ export default function LoginPage() {
     <div className={`lp lp--${role} ui--${uiRole} ${switching ? "is-switching" : ""} ph-${phase} ${dir ? dir : ""}`}>
       {infoMessage && <div className="lp-toast">{infoMessage}</div>}
 
-      {/* ✅ 배경: 반쪽 패널 + crossfade (깜빡임 방지) */}
+      {/* ✅ 배경: “겹친 상태로 같이 이동 + opacity만 동시 전환” */}
       <BackgroundHalf role={role} bgNext={bgNext} bgFade={bgFade} />
 
-      {/* ✅ 텍스트: 한 벌만 */}
+      {/* ✅ 텍스트 */}
       <HeroSingle role={role} phase={phase} title={hero.title} slogan={hero.slogan} />
 
-      {/* ✅ 카드: 한 장만 */}
+      {/* ✅ 카드 */}
       <div className="lp-cardScene" aria-live="polite">
         <div className={`lp-glow ${uiRole}`} aria-hidden="true" />
 
@@ -163,22 +164,25 @@ export default function LoginPage() {
 
 /* =======================
    Background: half panel
-   - base는 항상 on
-   - next는 겹쳐서 opacity로만 전환
+   - base와 next를 “같은 위치에 겹쳐”
+   - MOVE 시작과 동시에:
+     base opacity 1 -> 0
+     next opacity 0 -> 1
+   - 둘 다 같은 transform 규칙 적용되어 같이 이동
 ======================= */
 function BackgroundHalf({ role, bgNext, bgFade }) {
   const baseTheme = role === "employee" ? "employee" : "admin";
 
   return (
     <div className="lp-bg" aria-hidden="true">
-      {/* base layer: 항상 켜짐 */}
-      <div className={`lp-bgLayer ${baseTheme} on`}>
+      {/* base layer: 항상 존재, bgFade일 때만 fadeOut */}
+      <div className={`lp-bgLayer ${baseTheme} on ${bgFade ? "fadeOut" : ""}`}>
         <div className="lp-bgHalf">
           {baseTheme === "employee" ? <div className="lp-circles" /> : <Triangles />}
         </div>
       </div>
 
-      {/* next layer: bgNext가 있을 때만 렌더, bgFade로 on/off */}
+      {/* next layer: bgNext 있을 때만 겹쳐 올림, bgFade일 때 on */}
       {bgNext && (
         <div className={`lp-bgLayer ${bgNext} ${bgFade ? "on" : ""}`}>
           <div className="lp-bgHalf">

@@ -54,6 +54,9 @@ html, body, #root{ height:100%; }
 
 /* =========================
    Background (half panel)
+   ✅ 여기만 핵심 수정:
+   - base와 next가 같은 위치에서 같이 이동
+   - opacity만 동시 전환 (base out, next in)
 ========================= */
 .lp-bg{
   position:absolute;
@@ -62,6 +65,7 @@ html, body, #root{ height:100%; }
   overflow:hidden;
 }
 
+/* 레이어(전체 덮는 컨테이너) */
 .lp-bgLayer{
   position:absolute;
   inset:0;
@@ -69,7 +73,12 @@ html, body, #root{ height:100%; }
   transition: opacity var(--moveMs) var(--ease);
   will-change: opacity;
 }
+
+/* 기본 on */
 .lp-bgLayer.on{ opacity:1; }
+
+/* ✅ base가 동시에 빠지도록(이 클래스가 on보다 우선되도록 아래에 둠) */
+.lp-bgLayer.fadeOut{ opacity:1; }
 
 /* “반쪽 컬러 패널” */
 .lp-bgHalf{
@@ -79,11 +88,7 @@ html, body, #root{ height:100%; }
   width:50vw;
   will-change: transform, opacity;
   opacity: 1;
-
-  /* ✅ 오타 수정: var (--moveMs) -> var(--moveMs) */
-  transition:
-    transform var(--moveMs) var(--ease),
-    opacity calc(var(--moveMs) * 0.55) var(--ease);
+  transition: transform var(--moveMs) var(--ease);
 }
 
 /* employee면 왼쪽에, admin이면 오른쪽에 */
@@ -98,9 +103,9 @@ html, body, #root{ height:100%; }
   opacity:0.55;
 }
 
-/* MOVE 동안 “반쪽 패널”이 딱 50vw만 이동 (화면 밖으로 안 나감) */
-.lp.is-switching.ph-move.toAdmin  .lp-bgHalf{ transform: translateX(100%); }
-.lp.is-switching.ph-move.toEmployee .lp-bgHalf{ transform: translateX(-100%); }
+/* MOVE 동안 “반쪽 패널”이 딱 50vw만 이동 */
+.lp.is-switching.ph-move.toAdmin  .lp-bgHalf{ transform: translateX(200%); }
+.lp.is-switching.ph-move.toEmployee .lp-bgHalf{ transform: translateX(-200%); }
 
 /* ✅ 카드 가리기: MOVE 동안만 배경 패널을 카드보다 위로 */
 .lp.ph-move .lp-bgHalf{ z-index: 60; }
@@ -161,14 +166,14 @@ html, body, #root{ height:100%; }
 
 /* textIn */
 .lp.is-switching.ph-textIn.lp--employee .lp-hero{
-  transform: translateX(-120%);
+  transform: translateX(-10%);
   opacity:1;
-  transition: transform var(--inMs) var(--ease), opacity 120ms linear;
+  transition: transform var(--inMs) var(--ease), opacity 200ms linear;
 }
 .lp.is-switching.ph-textIn.lp--admin .lp-hero{
-  transform: translateX(120%);
+  transform: translateX(10%);
   opacity:1;
-  transition: transform var(--inMs) var(--ease), opacity 120ms linear;
+  transition: transform var(--inMs) var(--ease), opacity 200ms linear;
 }
 
 .lp.is-switching.ph-textIn.lp--employee .lp-hero,
